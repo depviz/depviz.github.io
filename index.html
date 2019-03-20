@@ -1,40 +1,55 @@
 <html>
   <header>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"></script>
-    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    
     <script src="https://cdn.rawgit.com/oauth-io/oauth-js/c5af4519/dist/oauth.js"></script>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-social/4.12.0/bootstrap-social.min.css">
   </header>
 
-  <body>
-    <a id="github-button" class="btn btn-block btn-social btn-github">
-      <i class="fa fa-github"></i> Sign in with Github
-    </a>
+  <body class="text-center">
+    <div class="container">
+      <form class="form-group">
+        <h1 class="h3 mb-3 font-weight-normal">Let's find some issues to visualize!</h1>
+        
+        <label for="inputRepository" class="sr-only">Repository</label>
+        <input type="repository" id="inputRepository" class="form-control" placeholder="owner/repository" required="" autofocus="">
+        <label for="inputLabels" class="sr-only">Labels</label>
+        <input type="labels" id="inputLabels" class="form-control" placeholder="label1,label2 (optional)">
+        <label for="inputMilestone" class="sr-only">Milestone</label>
+        <input type="labels" id="inputMilestone" class="form-control" placeholder="milestone (optional)">
+        
+        <button id="buttonAuth" class="btn btn-lg btn-primary btn-block" type="submit">
+          Auth via GitHub
+        </button>
+      </form>
+    </div>
 
     <script>
-      $('#github-button').on('click', function() {
-        // Initialize with your OAuth.io app public key
+      function getParameterByName(name) {
+        name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+        var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+            results = regex.exec(location.search);
+        return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+      }
+      
+      $('#inputRepository').val(getParameterByName('repo'));
+      $('#inputLabels').val(getParameterByName('labels'));
+      $('#inputMilestone').val(getParameterByName('milestone'));
+      
+      $('#buttonAuth').on('click', function() {
         OAuth.initialize('8VQXfOxIcsPReedbGeEJ2ZpZZss');
-        // Use popup for oauth
-        // Alternative is redirect
         OAuth.popup('github').then(github => {
-          console.log('github:', github);
-          // Retrieves user data from oauth provider
-          // Prompts 'welcome' message with User's email on successful login
-          // #me() is a convenient method to retrieve user data without requiring you
-          // to know which OAuth provider url to call
-          github.me().then(data => {
-            console.log('me data:', data);
-            alert('GitHub says your email is:' + data.email + ".\nView browser 'Console Log' for more details");
+          path = '/repos/' + $('#inputRepository').val() + '/issues'
+            + '?labels=' + encodeURI($('#inputLabels').val())
+            + '&milestone=' + encodeURI($('#inputMilestone').val());
+          
+          github.get(path).then(data => {
+            console.log('issues data:', data);
           });
-          // Retrieves user data from OAuth provider by using #get() and
-          // OAuth provider url
-          github.get('/user').then(data => {
-            console.log('self data:', data);
-          })
         });
-      })
+      });
     </script>
   </body>
 </html>
